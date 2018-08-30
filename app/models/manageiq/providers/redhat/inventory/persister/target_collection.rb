@@ -2,6 +2,8 @@ class ManageIQ::Providers::Redhat::Inventory::Persister::TargetCollection < Mana
   include ManageIQ::Providers::Redhat::Inventory::Persister::Definitions::InfraCollections
 
   def initialize_inventory_collections
+    initialize_tag_mapper
+
     initialize_infra_inventory_collections
   end
 

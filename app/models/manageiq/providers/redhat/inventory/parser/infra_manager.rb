@@ -161,7 +161,33 @@ class ManageIQ::Providers::Redhat::Inventory::Parser::InfraManager < ManageIQ::P
       networks = collector.collect_networks
       switches(persister_host, dc, nics, networks)
       host_hardware(persister_host, host, networks, nics)
+
+      host_labels(host, host.tags || [])
+      host_taggings(host, map_labels("HostRedhat", host.tags || []))
     end
+  end
+
+  def host_labels(host, labels)
+    labels.each do |label|
+      persister.host_labels.find_or_build_by(:resource => host, :name => label.name).assign_attributes(
+          :section => "labels",
+          :value   => label.name,
+          :source  => "redhat"
+      )
+    end
+  end
+
+  def host_taggings(host, tags_inventory_objects)
+    tags_inventory_objects.each do |tag|
+      persister.host_taggings.build(:taggable => host, :tag => tag)
+    end
+  end
+
+  def map_labels(model_name, labels)
+    label_hashes = labels.collect do |label|
+      {:name => label.name, :value => label.name}
+    end
+    persister.tag_mapper.map_labels(model_name, label_hashes)
   end
 
   def host_storages(dc, persister_host)

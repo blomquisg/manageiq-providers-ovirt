@@ -3,6 +3,7 @@ class ManageIQ::Providers::Redhat::Inventory::Persister < ManagerRefresh::Invent
   require_nested :TargetCollection
 
   attr_reader :collector
+  attr_reader :tag_mapper
 
   def initialize(manager, target, collector)
     @manager   = manager
@@ -16,6 +17,11 @@ class ManageIQ::Providers::Redhat::Inventory::Persister < ManagerRefresh::Invent
   end
 
   protected
+
+  def initialize_tag_mapper
+    @tag_mapper = ContainerLabelTagMapping.mapper
+    collections[:tags_to_resolve] = @tag_mapper.tags_to_resolve_collection
+  end
 
   # should be overriden by subclasses
   def strategy
