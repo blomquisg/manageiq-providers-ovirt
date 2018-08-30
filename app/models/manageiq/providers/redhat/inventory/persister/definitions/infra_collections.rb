@@ -60,9 +60,42 @@ module ManageIQ::Providers::Redhat::Inventory::Persister::Definitions::InfraColl
        host_networks
        host_operating_systems
        host_storages
-       host_switches).each do |name|
+       host_switches
+       host_labels
+       host_taggings).each do |name|
 
       add_collection(infra, name)
+    end
+  end
+
+  def add_host_labels
+    add_collection(infra, :host_labels) do |builder|
+      builder.add_targeted_arel(
+        lambda do |inventory_collection|
+          manager_uuids = inventory_collection.parent_inventory_collections.collect(&:manager__uuids).map(&:to_a).flatten
+          inventory_collection.parent.host_labels.where(
+            'hosts' => {:ems_ref => manager_uuids}
+          )
+        end
+      )
+    end
+  end
+
+  def add_host_taggings
+    add_collection(infra, :host_taggings) do |builder|
+      builder.add_properties(
+        :model_class                  => Tagging,
+        :manager_ref                  => %i(taggable tag),
+        :parent_inventory_collections => %i(hosts)
+      )
+
+      builder.add_targeted_arel(
+        lambda do |inventory_collection|
+          manager_uuids = inventory_collection.parent_inventory_collections.collect(&:manager_uuids).map(&:to_a).flatten
+          ems = inventory_collection.parent
+          ems.host_taggings.where('taggable_id' => ems.hosts.where(:emf_ref => manager_uuids))
+        end
+      )
     end
   end
 

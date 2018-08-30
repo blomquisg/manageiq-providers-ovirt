@@ -284,6 +284,7 @@ module ManageIQ::Providers::Redhat::InfraManager::Inventory::Strategies
         @obj = host
         @nics = connection.follow_link(host.nics)
         @statistics = connection.link?(host.statistics) ? connection.follow_link(host.statistics) : host.statistics
+        @tags = connection.follow_link(host.tags)
         super(host)
       end
     end
